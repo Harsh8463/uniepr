@@ -35,7 +35,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;ove
   </div>
   <div class="field">
     <label>Email</label>
-    <input type="email" id="email" placeholder="apna email dalein">
+    <input type="email" id="email" placeholder="Enter your email">
   </div>
   <div class="field">
     <label>Password</label>
@@ -49,7 +49,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;ove
     Student → student@demo.com / student123
   </div>
   <div class="link-row">
-    Account nahi hai? <a href="/register">Register karo</a>
+    Don't have an account? <a href="/register">Register here</a>
   </div>
 </div>
 <div id="toast"></div>
@@ -70,16 +70,16 @@ async function doLogin() {
   const err      = document.getElementById('errMsg');
   const btn      = document.getElementById('loginBtn');
   err.classList.remove('show');
-  if (!email || !password) { err.textContent='Email aur password dalein'; err.classList.add('show'); return; }
-  btn.disabled = true; btn.textContent = 'Login ho raha hai...';
+  if (!email || !password) { err.textContent='Please enter your email and password'; err.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Logging in...';
   try {
     const { user } = await api('POST', '/api/auth/login', { email, password });
     if (user.role !== role) {
-      err.textContent = `Yeh account ${user.role} ka hai, ${role} ka nahi`;
+      err.textContent = `This account is a ${user.role} account, not a ${role} account`;
       err.classList.add('show');
       btn.disabled=false; btn.textContent='Login →'; return;
     }
-    toast('Login successful! Redirect ho raha hai...', 'success');
+    toast('Login successful! Redirecting...', 'success');
     setTimeout(() => { window.location.href = user.role==='teacher' ? '/teacher' : '/student'; }, 800);
   } catch(e) {
     err.textContent = e.message;
