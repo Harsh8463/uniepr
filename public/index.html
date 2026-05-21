@@ -33,24 +33,24 @@ h1{font-size:clamp(2rem,5vw,3.8rem);font-weight:900;letter-spacing:-2px;line-hei
 <div class="grid"></div>
 <div class="hero">
   <div class="badge-pill"><div class="live-dot"></div>UNIEPR LECTURE SYSTEM</div>
-  <h1>Automated Lecture PDF,<br>System <span class="grad">....</span></h1>
-  <p class="sub">Teacher smartboard pe screen share karta hai · slides capture karta hai · lecture end karta hai · students ko instantly PDF mil jaati hai</p>
+  <h1>Teach on the board,<br>students get a <span class="grad">PDF instantly</span></h1>
+  <p class="sub">Teacher shares smartboard screen · captures slides · ends lecture · students instantly receive a PDF</p>
   <div class="cards">
     <a href="/login?role=teacher" class="rc" style="--c:#f59e0b">
       <div class="ic">👩‍🏫</div>
       <div class="tt">Teacher</div>
-      <div class="dd">Login karke lecture shuru karo</div>
+      <div class="dd">Login to start a lecture</div>
     </a>
     <a href="/login?role=student" class="rc" style="--c:#22c55e">
       <div class="ic">🎓</div>
       <div class="tt">Student</div>
-      <div class="dd">Login karke PDFs download karo</div>
+      <div class="dd">Login to view & download PDFs</div>
     </a>
   </div>
   <div class="flow">
     <span>Login</span><span class="sep">→</span>
     <span>Screen share</span><span class="sep">→</span>
-    <span>Slides capture</span><span class="sep">→</span>
+    <span>Capture slides</span><span class="sep">→</span>
     <span>End lecture</span><span class="sep">→</span>
     <span>PDF ready</span>
   </div>
@@ -58,7 +58,6 @@ h1{font-size:clamp(2rem,5vw,3.8rem);font-weight:900;letter-spacing:-2px;line-hei
 <div id="toast"></div>
 <script src="js/utils.js"></script>
 <script>
-// If already logged in, redirect
 api('GET','/api/auth/me').then(({user})=>{
   window.location.href = user.role==='teacher'?'/teacher':'/student';
 }).catch(()=>{});
