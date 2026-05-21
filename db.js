@@ -65,7 +65,7 @@ async function initDB() {
     );
   `);
 
-  -- Add new columns if upgrading
+  // Add new columns if upgrading
   await pool.query(`ALTER TABLE lectures ADD COLUMN IF NOT EXISTS unit_name TEXT NOT NULL DEFAULT 'Unit 1'`).catch(()=>{});
   await pool.query(`ALTER TABLE lectures ADD COLUMN IF NOT EXISTS lecture_no INT NOT NULL DEFAULT 1`).catch(()=>{});
 
