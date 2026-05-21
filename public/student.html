@@ -13,7 +13,6 @@
 .stat-num{font-size:1.9rem;font-weight:900;font-family:'JetBrains Mono',monospace}
 .stat-lbl{font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:5px}
 
-/* Subject tree */
 .subject-tree{display:flex;flex-direction:column;gap:12px}
 .subject-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .2s}
 .subject-group:has(.new-indicator){border-color:rgba(79,124,255,.3)}
@@ -84,8 +83,8 @@
       <div style="display:flex;align-items:center;gap:14px">
         <span style="font-size:1.8rem">🔴</span>
         <div>
-          <div style="font-weight:800;font-size:.95rem" id="liveBannerTitle">Abhi lecture chal raha hai!</div>
-          <div style="font-size:.78rem;color:var(--text2);margin-top:3px">Lecture khatam hote hi PDF yahan aa jaayegi.</div>
+          <div style="font-weight:800;font-size:.95rem" id="liveBannerTitle">A lecture is happening right now!</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:3px">The PDF will appear here as soon as the lecture ends.</div>
         </div>
       </div>
       <span class="badge badge-live"><span class="dot"></span>LIVE</span>
@@ -97,11 +96,11 @@
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-num" id="statTotal">0</div>
-      <div class="stat-lbl">Kul Lectures</div>
+      <div class="stat-lbl">Total Lectures</div>
     </div>
     <div class="stat-card">
       <div class="stat-num" id="statNew" style="color:var(--accent)">0</div>
-      <div class="stat-lbl">Naye (unread)</div>
+      <div class="stat-lbl">New (unread)</div>
     </div>
     <div class="stat-card">
       <div class="stat-num" id="statSubjects">0</div>
@@ -110,17 +109,17 @@
   </div>
 
   <div class="sec-header">
-    <div class="sec-title">📚 Mere Subjects ke Lectures</div>
+    <div class="sec-title">📚 My Subject Lectures</div>
     <button class="btn btn-ghost btn-sm" onclick="loadLectures()">🔄 Refresh</button>
   </div>
 
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Title, subject ya teacher se dhundho..." oninput="searchLectures(this.value)" id="searchInput">
+    <input type="text" placeholder="Search by title, subject or teacher..." oninput="searchLectures(this.value)" id="searchInput">
   </div>
 
   <div id="lectureTree" class="subject-tree">
-    <div class="empty-state"><div class="ei">⏳</div><div class="et">Load ho raha hai...</div></div>
+    <div class="empty-state"><div class="ei">⏳</div><div class="et">Loading...</div></div>
   </div>
 </div>
 
@@ -130,7 +129,7 @@
     <div class="pdf-modal-title" id="pdfModalTitle">Lecture PDF</div>
     <div style="display:flex;gap:8px">
       <a id="pdfDlBtn" href="#" download class="btn btn-gold btn-sm">⬇ Download</a>
-      <button class="btn btn-ghost btn-sm" onclick="closePDF()">✕ Band Karo</button>
+      <button class="btn btn-ghost btn-sm" onclick="closePDF()">✕ Close</button>
     </div>
   </div>
   <iframe id="pdfFrame" src="about:blank"></iframe>
@@ -158,18 +157,17 @@ async function loadLectures(){
     allLecs=await api('GET','/api/lectures');
     renderTree(allLecs);
     updateStats(allLecs);
-  }catch(e){toast('Load fail: '+e.message,'error');}
+  }catch(e){toast('Failed to load: '+e.message,'error');}
 }
 
 function renderTree(lecs){
   const container=document.getElementById('lectureTree');
   const completed=lecs.filter(l=>l.pdf_path);
   if(!completed.length){
-    container.innerHTML='<div class="empty-state"><div class="ei">📭</div><div class="et">Koi PDF nahi abhi</div><div>Jab teacher lecture end karega, PDF yahan aa jaayegi.</div></div>';
+    container.innerHTML='<div class="empty-state"><div class="ei">📭</div><div class="et">No PDFs yet</div><div>Once the teacher ends a lecture, the PDF will appear here.</div></div>';
     return;
   }
 
-  // Group: subject → unit → lectures (sorted by lecture_no)
   const grouped={};
   completed.forEach(l=>{
     if(!grouped[l.subject]) grouped[l.subject]={};
@@ -296,14 +294,14 @@ socket.on('lecture:started',l=>{
   document.getElementById('liveBannerWrap').style.display='block';
   document.getElementById('liveIndicator').style.display='inline-flex';
   document.getElementById('liveBannerTitle').textContent=`🔴 LIVE: ${l.title} — ${l.subject}`;
-  toast(`🔴 Lecture shuru: ${l.title}`,'info');
+  toast(`🔴 Lecture started: ${l.title}`,'info');
 });
 
 socket.on('lecture:ended',async()=>{
   document.getElementById('liveBannerWrap').style.display='none';
   document.getElementById('liveIndicator').style.display='none';
   await loadLectures();
-  toast('📄 Nayi PDF aa gayi! Dashboard mein dekho.','success');
+  toast('📄 New PDF available! Check your dashboard.','success');
 });
 
 socket.on('lecture:deleted',({lectureId})=>{
