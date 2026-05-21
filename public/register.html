@@ -27,17 +27,17 @@ h2{font-size:1.2rem;font-weight:800;margin-bottom:4px}
 <div class="orb orb2"></div>
 <div class="card">
   <div class="logo">UniEPR</div>
-  <h2>Account banao</h2>
-  <p class="sub">Teacher ya student — sab register kar sakte hain</p>
+  <h2>Create an account</h2>
+  <p class="sub">Teachers and students can both register here</p>
 
   <div class="role-tabs">
     <button class="rtab active" id="tabTeacher" onclick="setRole('teacher')">👩‍🏫 Teacher</button>
     <button class="rtab" id="tabStudent" onclick="setRole('student')">🎓 Student</button>
   </div>
 
-  <div class="field"><label>Poora Naam</label><input type="text" id="name" placeholder="Prof. Sharma"></div>
-  <div class="field"><label>Email</label><input type="email" id="email" placeholder="apna college email"></div>
-  <div class="field"><label>Password</label><input type="password" id="password" placeholder="kam se kam 6 characters"></div>
+  <div class="field"><label>Full Name</label><input type="text" id="name" placeholder="Prof. Sharma"></div>
+  <div class="field"><label>Email</label><input type="email" id="email" placeholder="Your college email"></div>
+  <div class="field"><label>Password</label><input type="password" id="password" placeholder="At least 6 characters"></div>
 
   <div id="studentFields">
     <div class="field"><label>Class / Section</label>
@@ -46,13 +46,13 @@ h2{font-size:1.2rem;font-weight:800;margin-bottom:4px}
   </div>
 
   <div class="field">
-    <label>Subjects (jo padhaate / padhte ho)</label>
+    <label>Subjects (you teach / study)</label>
     <div class="subjects-wrap" id="subjectsWrap"></div>
   </div>
 
   <div class="err" id="errMsg"></div>
-  <button class="btn btn-success btn-lg w-full" id="regBtn" onclick="doRegister()" style="margin-top:8px">Account Banao →</button>
-  <div class="link-row">Pehle se account hai? <a href="/login">Login karo</a></div>
+  <button class="btn btn-success btn-lg w-full" id="regBtn" onclick="doRegister()" style="margin-top:8px">Create Account →</button>
+  <div class="link-row">Already have an account? <a href="/login">Login here</a></div>
 </div>
 <div id="toast"></div>
 <script src="js/utils.js"></script>
@@ -89,18 +89,18 @@ async function doRegister() {
   const btn       = document.getElementById('regBtn');
   err.classList.remove('show');
 
-  if (!name||!email||!password) { err.textContent='Naam, email aur password zaroori hai'; err.classList.add('show'); return; }
-  if (password.length < 6)      { err.textContent='Password kam se kam 6 characters ka ho'; err.classList.add('show'); return; }
-  if (selectedSubs.length===0)  { err.textContent='Kam se kam ek subject chunein'; err.classList.add('show'); return; }
+  if (!name||!email||!password) { err.textContent='Name, email and password are required'; err.classList.add('show'); return; }
+  if (password.length < 6)      { err.textContent='Password must be at least 6 characters'; err.classList.add('show'); return; }
+  if (selectedSubs.length===0)  { err.textContent='Please select at least one subject'; err.classList.add('show'); return; }
 
-  btn.disabled=true; btn.textContent='Ban raha hai...';
+  btn.disabled=true; btn.textContent='Creating account...';
   try {
     const { user } = await api('POST','/api/auth/register',{ name, email, password, role, class_name: class_name||null, subjects: selectedSubs });
-    toast('Account ban gaya!','success');
+    toast('Account created successfully!','success');
     setTimeout(()=>{ window.location.href = user.role==='teacher'?'/teacher':'/student'; }, 800);
   } catch(e) {
     err.textContent = e.message; err.classList.add('show');
-    btn.disabled=false; btn.textContent='Account Banao →';
+    btn.disabled=false; btn.textContent='Create Account →';
   }
 }
 
