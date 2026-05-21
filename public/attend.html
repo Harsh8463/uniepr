@@ -13,24 +13,18 @@ body{display:flex;flex-direction:column;min-height:100vh;align-items:center;just
 
 .card{position:relative;z-index:1;width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:36px 28px;text-align:center;box-shadow:var(--shadow-lg)}
 
-/* Loading */
 #loadingState .load-icon{font-size:3rem;margin-bottom:16px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Login needed */
 #loginState .li-icon{font-size:3rem;margin-bottom:16px}
 
-/* Success */
 #successState .su-icon{font-size:4rem;margin-bottom:16px;animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
 .su-name{font-size:1.2rem;font-weight:800;margin-bottom:8px}
 .su-detail{font-size:.875rem;color:var(--text2);line-height:1.6;margin-bottom:24px}
 .su-time{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3);background:var(--surface2);border-radius:8px;padding:8px 16px;display:inline-block;margin-bottom:20px}
 
-/* Error */
 #errorState .er-icon{font-size:3rem;margin-bottom:16px}
-
-/* Already marked */
 #alreadyState .al-icon{font-size:3rem;margin-bottom:16px}
 
 .state-title{font-size:1.3rem;font-weight:900;margin-bottom:8px}
@@ -56,27 +50,27 @@ body{display:flex;flex-direction:column;min-height:100vh;align-items:center;just
   <div id="loadingState">
     <div class="load-icon">⏳</div>
     <div class="state-title">Verifying...</div>
-    <div class="state-sub">Ek second — attendance session check ho raha hai</div>
+    <div class="state-sub">Please wait — checking attendance session</div>
   </div>
 
   <!-- Login needed -->
   <div id="loginState" style="display:none">
     <div class="li-icon">🔐</div>
-    <div class="state-title">Login Karo</div>
-    <div class="state-sub">Attendance mark karne ke liye apne student account se login karo.</div>
-    <button class="btn btn-primary btn-lg w-full" onclick="goLogin()">Login Karo →</button>
+    <div class="state-title">Login Required</div>
+    <div class="state-sub">Please log in with your student account to mark attendance.</div>
+    <button class="btn btn-primary btn-lg w-full" onclick="goLogin()">Login →</button>
   </div>
 
   <!-- Session info + Mark button -->
   <div id="markState" style="display:none">
     <div style="font-size:2.5rem;margin-bottom:16px">✅</div>
-    <div class="state-title">Attendance Do</div>
+    <div class="state-title">Mark Attendance</div>
     <div class="session-info" id="sessionInfoBox"></div>
     <button class="btn btn-success btn-lg w-full" id="markBtn" onclick="markAttendance()">
-      ✅ Attendance Mark Karo
+      ✅ Mark My Attendance
     </button>
     <p style="font-size:.72rem;color:var(--text3);margin-top:12px;font-family:'JetBrains Mono',monospace">
-      Same WiFi verification ho rahi hai
+      WiFi verification in progress
     </p>
   </div>
 
@@ -86,23 +80,23 @@ body{display:flex;flex-direction:column;min-height:100vh;align-items:center;just
     <div class="su-name" id="successName">—</div>
     <div class="su-detail" id="successDetail">—</div>
     <div class="su-time" id="successTime">—</div>
-    <div style="font-size:.82rem;color:var(--text2)">Aap band kar sakte hain yeh page</div>
+    <div style="font-size:.82rem;color:var(--text2)">You can close this page</div>
   </div>
 
   <!-- Already marked -->
   <div id="alreadyState" style="display:none">
     <div class="al-icon">👍</div>
     <div class="state-title">Already Present!</div>
-    <div class="state-sub">Aapki attendance pehle se mark ho chuki hai is session mein.</div>
-    <button class="btn btn-ghost w-full" onclick="window.close()">Band Karo</button>
+    <div class="state-sub">Your attendance has already been marked for this session.</div>
+    <button class="btn btn-ghost w-full" onclick="window.close()">Close</button>
   </div>
 
   <!-- Error -->
   <div id="errorState" style="display:none">
     <div class="er-icon">❌</div>
-    <div class="state-title" id="errorTitle">Kuch Gadbad Hui</div>
-    <div class="state-sub" id="errorMsg">Session expire ho gayi ya galat QR scan kiya.</div>
-    <button class="btn btn-ghost w-full" onclick="window.history.back()">Wapas Jao</button>
+    <div class="state-title" id="errorTitle">Something Went Wrong</div>
+    <div class="state-sub" id="errorMsg">Session expired or invalid QR code scanned.</div>
+    <button class="btn btn-ghost w-full" onclick="window.history.back()">Go Back</button>
   </div>
 </div>
 
@@ -118,39 +112,35 @@ function show(id) {
 }
 
 async function init() {
-  if (!qrCode) { showError('Invalid QR Code', 'QR code sahi nahi hai.'); return; }
+  if (!qrCode) { showError('Invalid QR Code', 'The QR code is not valid.'); return; }
 
-  // Check login
   let user = null;
   try {
     const data = await api('GET', '/api/auth/me');
     user = data.user;
   } catch {
-    // Not logged in
     sessionStorage.setItem('attend_redirect', location.href);
     show('loginState');
     return;
   }
 
   if (user.role !== 'student') {
-    showError('Student Account Chahiye', 'Sirf students attendance mark kar sakte hain.');
+    showError('Student Account Required', 'Only students can mark attendance.');
     return;
   }
 
-  // Find session by QR
   try {
     const res = await fetch(`/api/attendance/active/check`, { credentials: 'include' });
     const sessions = await res.json();
     const session = sessions.find(s => s.qr_code === qrCode);
 
     if (!session) {
-      showError('Session Nahi Mili', 'QR code expire ho gaya ya teacher ne session band kar diya.');
+      showError('Session Not Found', 'The QR code has expired or the teacher has closed the session.');
       return;
     }
 
     sessionData = session;
 
-    // Show mark state
     document.getElementById('sessionInfoBox').innerHTML = `
       <div class="si-row">
         <span class="si-label">Subject</span>
@@ -178,7 +168,7 @@ async function init() {
 async function markAttendance() {
   const btn = document.getElementById('markBtn');
   btn.disabled = true;
-  btn.textContent = 'Mark ho raha hai...';
+  btn.textContent = 'Marking attendance...';
 
   try {
     const res = await fetch(`/api/attendance/mark/${qrCode}`, {
@@ -192,7 +182,6 @@ async function markAttendance() {
     if (res.status === 409) { show('alreadyState'); return; }
     if (!res.ok) throw new Error(data.error);
 
-    // Success!
     const userData = await api('GET', '/api/auth/me');
     document.getElementById('successName').textContent = `${userData.user.name} ✓`;
     document.getElementById('successDetail').textContent =
@@ -202,7 +191,7 @@ async function markAttendance() {
     show('successState');
   } catch(e) {
     btn.disabled = false;
-    btn.textContent = '✅ Attendance Mark Karo';
+    btn.textContent = '✅ Mark My Attendance';
     toast(e.message, 'error');
   }
 }
